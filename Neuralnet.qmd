@@ -1,0 +1,814 @@
+---
+title: "Chapter03"
+format: html
+editor: visual
+---
+
+### ผู้เขียน: ภาวินี สุภาวิมล (67076047)
+
+วันที่ 2024-12-27
+
+สถานะ: สำเร็จ
+
+## Check boundary of numeric
+
+```{r}
+a = 1000000
+print(a)
+a = 1e15
+print(a)
+a = 1e318 #เยอะสุด
+print(a)
+
+b = 1e-324 #เยอะสุด
+print(b)
+```
+
+## Linear function
+
+```{r}
+act.linear = function(x)
+{
+  out = x / 2
+  return(out)
+}
+
+a = c(1:10)
+a = sin(a)
+plot(a, type='o', col='red')
+b = act.linear(a)
+print(b)
+lines(b, type='o', col='blue')
+
+```
+
+## Unit step function
+
+```{r}
+act.step = function(x)
+{
+  # > 0.5; 1
+  # <= 0.5 & >= 0.5; 0
+  # < -0.5; -1
+  out = x
+  for(i in 1:length(x))
+  {
+    if(x[i]>0.5) {out[i] = 1}else{
+      if(x[i]<=0.5 & x[i]>=-0.5) {out[i] = 0}else{
+        out[i] = -1
+      }
+    }
+  }
+  return(out)
+}
+
+act.step2 = function(x)
+{
+  # > 0.5; 1
+  # <= 0.5 & >= 0.5; 0
+  # < -0.5; -1
+  out = x
+  out[x>0.5] = 1
+  out[x<=0.5 & x>=-0.5] = 0
+  out[x< -0.5] = -1
+  return(out)
+}
+
+a = c(1:20)
+a = sin(a)*3
+plot(a, type='o', col='red')
+b = act.step(a)
+print(b)
+lines(b, type='o', col='blue')
+b = act.step2(a)
+print(b)
+lines(b, type='o', col='green')
+
+```
+
+## Sigmoid function
+
+```{r}
+act.sigmoid = function(x) #Output อยู่ซีกบวก
+{
+  out = 1.5 / (1+exp(-1*(x-0.5)))
+  return(out)
+}
+
+a = c(1:10)
+a = sin(a)
+plot(a, type='o', col='red')
+b = act.sigmoid(a)
+print(b)
+lines(b, type='o', col='blue')
+```
+
+## Hyperbolic tangent
+
+```{r}
+act.tanh = function(x) #Output อยู่ซีบวกและลบ
+{
+  out = tanh(x)
+  return(out)
+}
+
+a = c(1:10)
+a = sin(a)
+plot(a, type='o', col='red')
+b = act.tanh(a)
+print(b)
+lines(b, type='o', col='blue')
+```
+
+## Softmax function
+
+```{r}
+act.softmax = function(x)
+{
+  ez = exp(x)
+  out = ez / sum(ez)
+  return(out)
+}
+
+a = c(1:10)
+a = sin(a)
+plot(a, type='o', col='red')
+b = act.softmax(a)
+print(b)
+sum(b)
+lines(b, type='o', col='blue')
+```
+
+## ReLu function
+
+```{r}
+act.relu = function(x)
+{
+  out = x
+  out[x<0] = 0
+  return(out)
+}
+
+a = c(1:10)
+a = sin(a)
+plot(a, type='o', col='red')
+b = act.relu(a)
+print(b)
+lines(b, type='o', col='blue')
+```
+
+## Neuralnet library
+
+Install package
+
+```{r}
+#install.package("neuralnet")
+library("neuralnet")
+??neuralnet
+```
+
+```{r}
+and = c(0,0,0,1)
+truthtable = expand.grid(c(0,1),c(0,1))
+and.data = data.frame(truthtable, and)
+print(and.data)
+#Edit column name
+colnames(and.data) = c("A", "B", "OUT")
+print(and.data)
+
+net = neuralnet(OUT~A+B,
+                and.data,
+                hidden = 0,
+                stepmax = 1e5,
+                rep = 1)
+print(net)
+
+saveRDS(net, "C:/Users/User/DL/net.rds")
+#net2 = readRDS("D:/DL/net.rds")
+```
+
+```{r}
+plot(net)
+```
+
+```{r}
+A = c(0,1,0,1,0,0)
+B = c(0,0,1,1,1,0)
+datatest = data.frame(A,B)
+pred = predict(net, datatest)
+print(pred)
+```
+
+```{r}
+and = c(0,0,0,1)
+truthtable = expand.grid(c(0,1),c(0,1))
+and.data = data.frame(truthtable, and)
+print(and.data)
+#Edit column name
+colnames(and.data) = c("A", "B", "OUT")
+print(and.data)
+
+net = neuralnet(OUT~A+B,
+                and.data,
+                hidden = 2,
+                stepmax = 1e5,
+                rep = 1)
+print(net)
+```
+
+```{r}
+plot(net)
+```
+
+```{r}
+A = c(0,1,0,1,0,0)
+B = c(0,0,1,1,1,0)
+datatest = data.frame(A,B)
+pred = predict(net, datatest)
+print(pred)
+```
+
+## การทดลอง
+
+จากวิธีการด้านบน เปลี่ยนเป็น OR, NOR, NAND, XOR ทดลองว่าถ้า hidden = 0 ผลลัพธ์ถูกไหม ถ้าเพิ่ม hidden มากกว่า 0 ผลลัพธ์เป็นอย่างไร
+
+#### OR: hidden = 0
+
+```{r}
+or = c(0,1,1,1)
+truthtable = expand.grid(c(0,1),c(0,1))
+or.data = data.frame(truthtable, or)
+print(or.data)
+#Edit column name
+colnames(or.data) = c("A", "B", "OUT")
+print(or.data)
+
+or_net = neuralnet(OUT~A+B,
+                or.data,
+                hidden = 0,
+                stepmax = 1e5,
+                rep = 1)
+print(or_net)
+```
+
+```{r}
+plot(or_net)
+```
+
+```{r}
+A = c(0,1,0,1,0,0)
+B = c(0,0,1,1,1,0)
+datatest = data.frame(A,B)
+pred = predict(or_net, datatest)
+print(pred)
+```
+
+#### OR: hidden = 1
+
+```{r}
+or_net = neuralnet(OUT~A+B,
+                or.data,
+                hidden = 1,
+                stepmax = 1e5,
+                rep = 1)
+print(or_net)
+```
+
+```{r}
+plot(or_net)
+```
+
+```{r}
+pred1 = predict(or_net, datatest)
+print(pred1)
+```
+
+#### OR: hidden = 2
+
+```{r}
+or_net = neuralnet(OUT~A+B,
+                or.data,
+                hidden = 2,
+                stepmax = 1e5,
+                rep = 1)
+print(or_net)
+```
+
+```{r}
+plot(or_net)
+```
+
+```{r}
+pred2 = predict(or_net, datatest)
+print(pred2)
+```
+
+#### OR: hidden = 3
+
+```{r}
+or_net = neuralnet(OUT~A+B,
+                or.data,
+                hidden = 3,
+                stepmax = 1e5,
+                rep = 1)
+print(or_net)
+```
+
+```{r}
+plot(or_net)
+```
+
+```{r}
+pred3 = predict(or_net, datatest)
+print(pred3)
+```
+
+#### OR: hidden = 4
+
+```{r}
+or_net = neuralnet(OUT~A+B,
+                or.data,
+                hidden = 4,
+                stepmax = 1e5,
+                rep = 1)
+print(or_net)
+```
+
+```{r}
+plot(or_net)
+```
+
+```{r}
+pred4 = predict(or_net, datatest)
+print(pred4)
+```
+
+Compare result between set hidden = 0, 1, 2, 3 and 4
+
+```{r}
+actual = c(0,1,1,1,1,0)
+compare.or = data.frame(A, B, actual, pred, pred1, pred2, pred3, pred4)
+colnames(compare.or) = c("A", "B", "Actual", "OUT(0)", "OUT(1)", "OUT(2)", "OUT(3)", "OUT(4)")
+print(compare.or)
+```
+
+#### NOR: hidden = 0
+
+```{r}
+nor = c(1,0,0,0)
+truthtable = expand.grid(c(0,1),c(0,1))
+nor.data = data.frame(truthtable, nor)
+print(nor.data)
+#Edit column name
+colnames(nor.data) = c("A", "B", "OUT")
+print(nor.data)
+
+nor_net = neuralnet(OUT~A+B,
+                nor.data,
+                hidden = 0,
+                stepmax = 1e5,
+                rep = 1)
+print(nor_net)
+```
+
+```{r}
+plot(nor_net)
+```
+
+```{r}
+A = c(0,1,0,1,0,0)
+B = c(0,0,1,1,1,0)
+datatest = data.frame(A,B)
+pred = predict(nor_net, datatest)
+print(pred)
+```
+
+#### NOR: hidden = 1
+
+```{r}
+nor_net = neuralnet(OUT~A+B,
+                nor.data,
+                hidden = 1,
+                stepmax = 1e5,
+                rep = 1)
+print(nor_net)
+```
+
+```{r}
+plot(nor_net)
+```
+
+```{r}
+pred1 = predict(nor_net, datatest)
+print(pred1)
+```
+
+#### NOR: hidden = 2
+
+```{r}
+nor_net = neuralnet(OUT~A+B,
+                nor.data,
+                hidden = 2,
+                stepmax = 1e5,
+                rep = 1)
+print(nor_net)
+```
+
+```{r}
+plot(nor_net)
+```
+
+```{r}
+pred2 = predict(nor_net, datatest)
+print(pred2)
+```
+
+#### NOR: hidden = 3
+
+```{r}
+nor_net = neuralnet(OUT~A+B,
+                nor.data,
+                hidden = 3,
+                stepmax = 1e5,
+                rep = 1)
+print(nor_net)
+```
+
+```{r}
+plot(nor_net)
+```
+
+```{r}
+pred3 = predict(nor_net, datatest)
+print(pred3)
+```
+
+#### NOR: hidden = 4
+
+```{r}
+nor_net = neuralnet(OUT~A+B,
+                nor.data,
+                hidden = 4,
+                stepmax = 1e5,
+                rep = 1)
+print(nor_net)
+```
+
+```{r}
+plot(nor_net)
+```
+
+```{r}
+pred4 = predict(nor_net, datatest)
+print(pred4)
+```
+
+Compare result between set hidden = 1,2,3 and 4
+
+```{r}
+actual = c(1,0,0,0,0,1)
+compare.nor = data.frame(A, B, actual, pred, pred1, pred2, pred3, pred4)
+colnames(compare.nor) = c("A", "B", "Actual", "OUT(0)", "OUT(1)", "OUT(2)", "OUT(3)", "OUT(4)")
+print(compare.nor)
+```
+
+#### NAND: hidden = 0
+
+```{r}
+nand = c(1,1,1,0)
+truthtable = expand.grid(c(0,1),c(0,1))
+nand.data = data.frame(truthtable, nand)
+print(nand.data)
+#Edit column name
+colnames(nand.data) = c("A", "B", "OUT")
+print(nand.data)
+
+nand_net = neuralnet(OUT~A+B,
+                nand.data,
+                hidden = 0,
+                stepmax = 1e5,
+                rep = 1)
+print(nand_net)
+```
+
+```{r}
+plot(nand_net)
+```
+
+```{r}
+A = c(0,1,0,1,0,0)
+B = c(0,0,1,1,1,0)
+datatest = data.frame(A,B)
+pred = predict(nand_net, datatest)
+print(pred)
+```
+
+#### NAND: hidden = 1
+
+```{r}
+nand_net = neuralnet(OUT~A+B,
+                nand.data,
+                hidden = 1,
+                stepmax = 1e5,
+                rep = 1)
+print(nand_net)
+```
+
+```{r}
+plot(nand_net)
+```
+
+```{r}
+pred1 = predict(nand_net, datatest)
+print(pred1)
+```
+
+#### NAND: hidden = 2
+
+```{r}
+nand_net = neuralnet(OUT~A+B,
+                nand.data,
+                hidden = 2,
+                stepmax = 1e5,
+                rep = 1)
+print(nand_net)
+```
+
+```{r}
+plot(nand_net)
+```
+
+```{r}
+pred2 = predict(nand_net, datatest)
+print(pred2)
+```
+
+#### NAND: hidden = 3
+
+```{r}
+nand_net = neuralnet(OUT~A+B,
+                nand.data,
+                hidden = 3,
+                stepmax = 1e5,
+                rep = 1)
+print(nand_net)
+```
+
+```{r}
+plot(nand_net)
+```
+
+```{r}
+pred3 = predict(nand_net, datatest)
+print(pred3)
+```
+
+#### NAND: hidden = 4
+
+```{r}
+nand_net = neuralnet(OUT~A+B,
+                nand.data,
+                hidden = 4,
+                stepmax = 1e5,
+                rep = 1)
+print(nand_net)
+```
+
+```{r}
+plot(nand_net)
+```
+
+```{r}
+pred4 = predict(nand_net, datatest)
+print(pred4)
+```
+
+Compare between hidden = 1,2,3 and 4
+
+```{r}
+actual = c(1,1,1,0,1,1)
+compare.nand = data.frame(A, B, actual, pred, pred1, pred2, pred3, pred4)
+colnames(compare.nand) = c("A", "B", "Actual", "OUT(0)", "OUT(1)", "OUT(2)", "OUT(3)", "OUT(4)")
+print(compare.nand)
+```
+
+#### XOR: hidden = 0
+
+```{r}
+xor = c(0,1,1,0)
+truthtable = expand.grid(c(0,1),c(0,1))
+xor.data = data.frame(truthtable, xor)
+print(xor.data)
+#Edit column name
+colnames(xor.data) = c("A", "B", "OUT")
+print(xor.data)
+
+xor_net = neuralnet(OUT~A+B,
+                xor.data,
+                hidden = 0,
+                stepmax = 1e5,
+                rep = 1)
+print(xor_net)
+```
+
+```{r}
+plot(xor_net)
+```
+
+```{r}
+A = c(0,1,0,1,0,0)
+B = c(0,0,1,1,1,0)
+datatest = data.frame(A,B)
+pred = predict(xor_net, datatest)
+print(pred)
+```
+
+#### XOR: hidden = 1
+
+```{r}
+xor_net = neuralnet(OUT~A+B,
+                xor.data,
+                hidden = 1,
+                stepmax = 1e5,
+                rep = 1)
+print(xor_net)
+```
+
+```{r}
+plot(xor_net)
+```
+
+```{r}
+pred1 = predict(xor_net, datatest)
+print(pred1)
+```
+
+#### XOR: hidden = 2
+
+```{r}
+xor_net = neuralnet(OUT~A+B,
+                xor.data,
+                hidden = 2,
+                stepmax = 1e5,
+                rep = 1)
+print(xor_net)
+```
+
+```{r}
+plot(xor_net)
+```
+
+```{r}
+pred2 = predict(xor_net, datatest)
+print(pred2)
+```
+
+#### XOR: hidden = 3
+
+```{r}
+xor_net = neuralnet(OUT~A+B,
+                xor.data,
+                hidden = 3,
+                stepmax = 1e5,
+                rep = 1)
+print(xor_net)
+```
+
+```{r}
+plot(xor_net)
+```
+
+```{r}
+pred3 = predict(xor_net, datatest)
+print(pred3)
+```
+
+#### XOR: hidden = 4
+
+```{r}
+xor_net = neuralnet(OUT~A+B,
+                xor.data,
+                hidden = 4,
+                stepmax = 1e5,
+                rep = 1)
+print(xor_net)
+```
+
+```{r}
+plot(xor_net)
+```
+
+```{r}
+pred4 = predict(xor_net, datatest)
+print(pred4)
+```
+
+Compare between hidden = 1,2,3 and 4
+
+```{r}
+actual = c(0,1,1,0,1,0)
+compare.xor = data.frame(A, B, actual, pred, pred1, pred2, pred3, pred4)
+colnames(compare.xor) = c("A", "B", "Actual", "OUT(0)", "OUT(1)", "OUT(2)", "OUT(3)", "OUT(4)")
+print(compare.xor)
+```
+
+#### สรุปผล
+
+จากการ plot neuralnet model ด้านบนจะเห็นได้ว่ายิ่ง hidden layer มาก ความซับซ้อนของ model ก็ยิ่งมีมากตามไปด้วย ต่อไปจะทำการทดลองหาค่า error จากค่า actual เเละ prediction ด้วย RMSE
+
+เขียน function คำนวณหาค่า RMSE
+
+```{r}
+calculate.rmse = function(y.actual, y.pred)
+{
+  rmse = sqrt(mean((y.actual - y.pred)^2))
+  return(rmse)
+}
+```
+
+คำนวณ RMSE ของ OR
+
+```{r}
+print(compare.or)
+
+or.rmse0 = calculate.rmse(compare.or$Actual, compare.or$`OUT(0)`)
+or.rmse1 = calculate.rmse(compare.or$Actual, compare.or$`OUT(1)`)
+or.rmse2 = calculate.rmse(compare.or$Actual, compare.or$`OUT(2)`)
+or.rmse3 = calculate.rmse(compare.or$Actual, compare.or$`OUT(3)`)
+or.rmse4 = calculate.rmse(compare.or$Actual, compare.or$`OUT(4)`)
+
+rmse.or = c(or.rmse0,or.rmse1,or.rmse2,or.rmse3,or.rmse4)
+print(rmse.or)
+```
+
+```{r}
+plot(rmse.or, type='o', col='red')
+```
+
+คำนวณ RMSE ของ NOR
+
+```{r}
+print(compare.nor)
+
+nor.rmse0 = calculate.rmse(compare.nor$Actual, compare.nor$`OUT(0)`)
+nor.rmse1 = calculate.rmse(compare.nor$Actual, compare.nor$`OUT(1)`)
+nor.rmse2 = calculate.rmse(compare.nor$Actual, compare.nor$`OUT(2)`)
+nor.rmse3 = calculate.rmse(compare.nor$Actual, compare.nor$`OUT(3)`)
+nor.rmse4 = calculate.rmse(compare.nor$Actual, compare.nor$`OUT(4)`)
+
+rmse.nor = c(nor.rmse0,nor.rmse1,nor.rmse2,nor.rmse3,nor.rmse4)
+print(rmse.nor)
+```
+
+```{r}
+plot(rmse.nor, type='o', col='red')
+```
+
+คำนวณ RMSE ของ NAND
+
+```{r}
+print(compare.nand)
+
+nand.rmse0 = calculate.rmse(compare.nand$Actual, compare.nand$`OUT(0)`)
+nand.rmse1 = calculate.rmse(compare.nand$Actual, compare.nand$`OUT(1)`)
+nand.rmse2 = calculate.rmse(compare.nand$Actual, compare.nand$`OUT(2)`)
+nand.rmse3 = calculate.rmse(compare.nand$Actual, compare.nand$`OUT(3)`)
+nand.rmse4 = calculate.rmse(compare.nand$Actual, compare.nand$`OUT(4)`)
+
+rmse.nand = c(nand.rmse0,nand.rmse1,nand.rmse2,nand.rmse3,nand.rmse4)
+print(rmse.nand)
+```
+
+```{r}
+plot(rmse.nand, type='o', col='red')
+```
+
+คำนวณ RMSE ของ XOR
+
+```{r}
+print(compare.xor)
+
+xor.rmse0 = calculate.rmse(compare.xor$Actual, compare.xor$`OUT(0)`)
+xor.rmse1 = calculate.rmse(compare.xor$Actual, compare.xor$`OUT(1)`)
+xor.rmse2 = calculate.rmse(compare.xor$Actual, compare.xor$`OUT(2)`)
+xor.rmse3 = calculate.rmse(compare.xor$Actual, compare.xor$`OUT(3)`)
+xor.rmse4 = calculate.rmse(compare.xor$Actual, compare.xor$`OUT(4)`)
+
+rmse.xor = c(xor.rmse0,xor.rmse1,xor.rmse2,xor.rmse3,xor.rmse4)
+print(rmse.xor)
+```
+
+```{r}
+plot(rmse.xor, type='o', col='red')
+```
+
+นำ RMSE มา plot เปรียบเทียบกันของทุก operator
+
+```{r}
+plot(rmse.or, type='o', col='red', ylim=c(0.0, 0.5))
+lines(rmse.nor, type='o', col='black')
+lines(rmse.nand, type='o', col='blue')
+lines(rmse.xor, type='o', col='orange')
+```
+
+จากกราฟแสดงให้เห็นว่า ยิ่ง hidden layer มีจำนวนมาก RMSR ก็ยิ่งมีแนวโน้มลดลง แต่ไม่สามารถสรุปได้ว่า hidden layer มากกว่าจะได้ RMSE น้อยกว่าเสมอ ดังที่เห็นจากกราฟ จุดที่ index ที่น้อยกว่าไม่ได้มีค่า RMSE มากกว่า index ถัดไปทุกจุด ดังนั้น การจะเลือกใช้ค่า hidden layer สามารถตัดสินใจได้จากการ plot กราฟได้ และไม่สามารถแก้ปัญหา XOR ได้เมื่อใช้ hidden layer 1 หรือ 2 เนื่องจากจะได้ error ที่สูงมาก
